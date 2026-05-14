@@ -203,10 +203,7 @@ export default function App() {
   return (
     <main className="container">
       <header className="hero">
-        <h1>Gerador de Push Notification com IA</h1>
-        <p>
-          Crie campanhas, gere opções com IA, edite e envie notificações via Firebase.
-        </p>
+        <h1>Gerador Push Notification</h1>
       </header>
 
       <FirebaseConfig
