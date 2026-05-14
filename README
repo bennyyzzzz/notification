@@ -1,0 +1,562 @@
+# Auto Notify — Gerador de Push Notification com IA
+
+## Visão Geral
+
+O Auto Notify é uma ferramenta web para criação, geração, edição, organização e envio de notificações push utilizando Inteligência Artificial e Firebase Cloud Messaging HTTP v1.
+
+O sistema foi pensado para equipes de:
+
+* CRM
+* Marketing
+* Growth
+* E-commerce
+* Apps mobile
+* Retenção de usuários
+* Push marketing
+
+A aplicação permite:
+
+* Criar campanhas
+* Gerar múltiplas variações com IA
+* Editar notificações manualmente
+* Validar regras de copy
+* Organizar notificações em checkout/fila
+* Enviar para Firebase
+* Adicionar UTMs automaticamente
+* Trabalhar com token, lista de tokens e tópicos
+* Salvar dados localmente para evitar perda ao atualizar a página
+
+---
+
+# Tecnologias Utilizadas
+
+## Frontend
+
+* React
+* Vite
+* Axios
+* CSS puro
+
+## Backend
+
+* Node.js
+* Express
+* Axios
+* Google Auth Library
+* OpenAI SDK
+
+## Integrações
+
+* Firebase Cloud Messaging HTTP v1 API
+* OpenAI API
+
+---
+
+# Arquitetura do Projeto
+
+```txt
+Frontend React
+↓
+Backend Express
+↓
+OpenAI API
+↓
+Firebase Cloud Messaging HTTP v1
+↓
+Dispositivo/App
+```
+
+---
+
+# Estrutura do Projeto
+
+```txt
+auto-notify/
+│
+├── backend/
+│   ├── src/
+│   │   ├── routes/
+│   │   │   ├── aiRoutes.js
+│   │   │   ├── notificationRoutes.js
+│   │   │   └── queueRoutes.js
+│   │   │
+│   │   ├── services/
+│   │   │   ├── aiService.js
+│   │   │   ├── firebaseService.js
+│   │   │   └── validationService.js
+│   │   │
+│   │   ├── utils/
+│   │   │   └── urlBuilder.js
+│   │   │
+│   │   ├── app.js
+│   │   └── server.js
+│   │
+│   ├── .env
+│   └── package.json
+│
+└── frontend/
+    ├── src/
+    │   ├── api/
+    │   │   └── api.js
+    │   │
+    │   ├── components/
+    │   │   ├── CampaignForm.jsx
+    │   │   ├── EditNotification.jsx
+    │   │   ├── FirebaseConfig.jsx
+    │   │   ├── GeneratedOptions.jsx
+    │   │   └── QueueCheckout.jsx
+    │   │
+    │   ├── App.jsx
+    │   ├── main.jsx
+    │   └── styles.css
+    │
+    └── package.json
+```
+
+---
+
+# Funcionalidades
+
+## Criação de campanhas
+
+Permite:
+
+* Nome da campanha
+* Tema da campanha
+* Segmento
+* Tom de voz
+* Promoção
+* Produto
+* Categoria
+* Cupom
+* Desconto
+* Data e horário
+* Público-alvo
+* Link de redirecionamento
+
+---
+
+## Geração com IA
+
+O sistema envia um prompt estruturado para IA.
+
+A IA retorna:
+
+```json
+[
+  {
+    "id": 1,
+    "title": "Oferta especial 🔥",
+    "body": "Confira agora e aproveite essa condição.",
+    "cta": "Confira agora",
+    "strategy": "Urgência promocional"
+  }
+]
+```
+
+Regras:
+
+* Título até 5 palavras
+* Corpo até 10 palavras
+* CTA obrigatório
+* Emojis moderados
+* Linguagem adaptada ao segmento
+* Sem promessas falsas
+
+---
+
+## Edição manual
+
+Após selecionar uma opção:
+
+* O usuário pode editar
+* O sistema valida quantidade de palavras
+* Bloqueia avanço se inválido
+
+---
+
+## Checkout/Fila
+
+Permite:
+
+* Salvar notificações
+* Duplicar
+* Remover
+* Enviar depois
+* Persistência em cache/localStorage
+
+---
+
+## Integração Firebase
+
+Suporta:
+
+* Token único
+* Lista de tokens
+* Tópicos Firebase
+* Condição de tópicos
+
+---
+
+# Configuração do Projeto
+
+# Backend
+
+## Instalação
+
+```bash
+cd backend
+npm install
+```
+
+## Rodar backend
+
+```bash
+npm run dev
+```
+
+Servidor:
+
+```txt
+http://localhost:3001
+```
+
+---
+
+# Frontend
+
+## Instalação
+
+```bash
+cd frontend
+npm install
+```
+
+## Rodar frontend
+
+```bash
+npm run dev
+```
+
+Aplicação:
+
+```txt
+http://localhost:5173
+```
+
+---
+
+# Configuração OpenAI
+
+## Criar chave
+
+Acesse:
+
+```txt
+https://platform.openai.com/api-keys
+```
+
+## Backend `.env`
+
+```env
+OPENAI_API_KEY=sua_chave
+```
+
+---
+
+# Configuração Firebase
+
+## Criar projeto
+
+Acesse:
+
+```txt
+https://console.firebase.google.com
+```
+
+---
+
+## Ativar Cloud Messaging
+
+Dentro do projeto:
+
+```txt
+Build
+→ Cloud Messaging
+```
+
+---
+
+## Gerar Service Account
+
+```txt
+Configurações do Projeto
+→ Contas de serviço
+→ Gerar nova chave privada
+```
+
+---
+
+## Campos necessários
+
+O sistema usa:
+
+```json
+{
+  "project_id": "meu-projeto",
+  "client_email": "firebase-adminsdk@meu-projeto.iam.gserviceaccount.com",
+  "private_key": "-----BEGIN PRIVATE KEY-----..."
+}
+```
+
+Preencher no frontend:
+
+* Project ID
+* Client Email
+* Private Key
+
+---
+
+# Tipos de envio
+
+## Token único
+
+```txt
+Destino: token
+```
+
+Usado para:
+
+* testes
+* envios individuais
+* QA
+
+---
+
+## Lista de tokens
+
+```txt
+Destino: token_list
+```
+
+Aceita:
+
+```txt
+token1
+token2
+token3
+```
+
+Ou:
+
+```txt
+token1, token2, token3
+```
+
+---
+
+## Tópico Firebase
+
+```txt
+Destino: topic
+```
+
+Exemplo:
+
+```txt
+promocoes
+clientes_vip
+black_friday
+```
+
+---
+
+## Condição de tópicos
+
+```txt
+Destino: condition
+```
+
+Exemplo:
+
+```txt
+'clientes_vip' in topics && 'promocoes' in topics
+```
+
+---
+
+# UTM Automática
+
+O sistema adiciona automaticamente:
+
+```txt
+utm_source=firebase
+utm_medium=push
+utm_campaign=nome_da_campanha
+```
+
+## Exemplo
+
+Entrada:
+
+```txt
+https://loja.com/componentes
+```
+
+Saída:
+
+```txt
+https://loja.com/componentes?utm_source=firebase&utm_medium=push&utm_campaign=black_friday
+```
+
+---
+
+# Endpoints Backend
+
+## Gerar notificações
+
+```http
+POST /generate-push-options
+```
+
+---
+
+## Adicionar fila
+
+```http
+POST /queue
+```
+
+---
+
+## Buscar fila
+
+```http
+GET /queue
+```
+
+---
+
+## Atualizar fila
+
+```http
+PUT /queue/:id
+```
+
+---
+
+## Duplicar item
+
+```http
+POST /queue/:id/duplicate
+```
+
+---
+
+## Remover item
+
+```http
+DELETE /queue/:id
+```
+
+---
+
+## Enviar push
+
+```http
+POST /send-notification
+```
+
+---
+
+# Exemplo de Payload Firebase
+
+```json
+{
+  "message": {
+    "token": "TOKEN_AQUI",
+    "notification": {
+      "title": "Oferta especial 🔥",
+      "body": "Confira agora e aproveite essa condição."
+    },
+    "data": {
+      "redirect_url": "https://loja.com/produto"
+    }
+  }
+}
+```
+
+---
+
+# Fluxo do Sistema
+
+```txt
+Usuário cria campanha
+↓
+IA gera 5 opções
+↓
+Usuário escolhe
+↓
+Usuário edita
+↓
+Sistema valida
+↓
+Vai para checkout
+↓
+Usuário envia
+↓
+Backend autentica no Firebase
+↓
+Push enviada
+```
+
+---
+
+# Persistência Local
+
+O sistema utiliza:
+
+```txt
+localStorage
+```
+
+Para salvar:
+
+* fila de notificações
+* configuração Firebase
+
+Evita perda ao atualizar a página.
+
+---
+
+# Segurança
+
+## Nunca enviar para GitHub
+
+Adicionar ao `.gitignore`:
+
+```txt
+.env
+service-account.json
+node_modules
+```
+
+---
+
+## Produção
+
+Atualmente o MVP salva credenciais Firebase no navegador.
+
+Para produção o ideal é:
+
+```txt
+Frontend
+↓
+Envia credencial uma vez
+↓
+Backend criptografa
+↓
+Salva no banco
+↓
+Frontend nunca vê novamente
+---
