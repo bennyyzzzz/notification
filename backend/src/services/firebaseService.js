@@ -1,9 +1,28 @@
 import axios from "axios";
 import { GoogleAuth } from "google-auth-library";
 
-export async function getAccessToken() {
+function validateFirebaseConfig(firebaseConfig) {
+  if (!firebaseConfig?.projectId) {
+    throw new Error("Project ID do Firebase é obrigatório.");
+  }
+
+  if (!firebaseConfig?.clientEmail) {
+    throw new Error("Client Email do Firebase é obrigatório.");
+  }
+
+  if (!firebaseConfig?.privateKey) {
+    throw new Error("Private Key do Firebase é obrigatória.");
+  }
+}
+
+async function getAccessToken(firebaseConfig) {
+  validateFirebaseConfig(firebaseConfig);
+
   const auth = new GoogleAuth({
-    keyFile: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+    credentials: {
+      client_email: firebaseConfig.clientEmail,
+      private_key: firebaseConfig.privateKey.replace(/\\n/g, "\n")
+    },
     scopes: ["https://www.googleapis.com/auth/firebase.messaging"]
   });
 
@@ -13,18 +32,17 @@ export async function getAccessToken() {
   return accessToken.token;
 }
 
-export async function sendFirebaseNotification(data) {
+async function sendSingleMessage(data) {
   const {
     title,
     body,
     redirectUrl,
     audienceType,
-    audienceValue
+    audienceValue,
+    firebaseConfig
   } = data;
 
-  const accessToken = await getAccessToken();
-
-  const projectId = process.env.FIREBASE_PROJECT_ID;
+  const accessToken = await getAccessToken(firebaseConfig);
 
   const message = {
     notification: {
@@ -32,7 +50,7 @@ export async function sendFirebaseNotification(data) {
       body
     },
     data: {
-      redirect_url: redirectUrl
+      redirect_url: redirectUrl || ""
     }
   };
 
@@ -44,13 +62,15 @@ export async function sendFirebaseNotification(data) {
     message.topic = audienceValue;
   }
 
-  const payload = {
-    message
-  };
+  if (audienceType === "condition") {
+    message.condition = audienceValue;
+  }
 
   const response = await axios.post(
-    `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`,
-    payload,
+    `https://fcm.googleapis.com/v1/projects/${firebaseConfig.projectId}/messages:send`,
+    {
+      message
+    },
     {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -60,4 +80,46 @@ export async function sendFirebaseNotification(data) {
   );
 
   return response.data;
+}
+
+export async function sendFirebaseNotification(data) {
+  if (data.audienceType === "token_list") {
+    const tokens = data.audienceValue
+      .split(/[\n,]+/)
+      .map((token) => token.trim())
+      .filter(Boolean);
+
+    const results = [];
+
+    for (const token of tokens) {
+      try {
+        const result = await sendSingleMessage({
+          ...data,
+          audienceType: "token",
+          audienceValue: token
+        });
+
+        results.push({
+          token,
+          success: true,
+          result
+        });
+      } catch (error) {
+        results.push({
+          token,
+          success: false,
+          error: error.response?.data || error.message
+        });
+      }
+    }
+
+    return {
+      total: tokens.length,
+      success: results.filter((item) => item.success).length,
+      failed: results.filter((item) => !item.success).length,
+      results
+    };
+  }
+
+  return sendSingleMessage(data);
 }

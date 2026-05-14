@@ -12,12 +12,15 @@ router.post("/", async (req, res) => {
 
     res.json({
       success: true,
-      result
+      message: "Notificação enviada com sucesso.",
+      firebaseResult: result
     });
   } catch (error) {
+    console.error("Erro ao enviar push:", error.response?.data || error.message);
+
     res.status(400).json({
       success: false,
-      error: error.message
+      error: error.response?.data || error.message
     });
   }
 });

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "./api/api";
+import FirebaseConfig from "./components/FirebaseConfig";
 
 import CampaignForm from "./components/CampaignForm";
 import GeneratedOptions from "./components/GeneratedOptions";
@@ -28,6 +29,17 @@ export default function App() {
     audienceValue: "",
     tone: "direto"
   });
+  const [firebaseConfig, setFirebaseConfig] = useState(() => {
+  const saved = localStorage.getItem("firebaseConfig");
+
+    return saved
+      ? JSON.parse(saved)
+      : {
+          projectId: "",
+          clientEmail: "",
+          privateKey: ""
+        };
+  });
 
   const [errors, setErrors] = useState({});
   const [options, setOptions] = useState([]);
@@ -45,6 +57,10 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem("pushQueue", JSON.stringify(queue));
   }, [queue]);
+
+  useEffect(() => {
+    localStorage.setItem("firebaseConfig", JSON.stringify(firebaseConfig));
+  }, [firebaseConfig]);
 
   function validateCampaign() {
     const newErrors = {};
@@ -155,13 +171,22 @@ export default function App() {
 
   async function handleSendNotification(item) {
     try {
-      const response = await api.post("/send-notification", item);
+      const response = await api.post("/send-notification", {
+        ...item,
+        firebaseConfig
+      });
 
       if (response.data.success) {
-        showModal("Notificação enviada com sucesso!");
+        showModal("Sucesso", "Notificação enviada com sucesso!");
       }
     } catch (error) {
-      showModal(error.response?.data?.error || "Erro ao enviar notificação.");
+      showModal(
+        "Erro ao enviar",
+        typeof error.response?.data?.error === "string"
+          ? error.response.data.error
+          : "Erro ao enviar notificação para o Firebase."
+      );
+
       console.log(error);
     }
   }
@@ -182,6 +207,11 @@ export default function App() {
           Crie campanhas, gere opções com IA, edite e envie notificações via Firebase.
         </p>
       </header>
+
+      <FirebaseConfig
+        firebaseConfig={firebaseConfig}
+        setFirebaseConfig={setFirebaseConfig}
+      />
 
       <CampaignForm
         campaign={campaign}
