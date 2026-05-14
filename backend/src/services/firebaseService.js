@@ -1,5 +1,6 @@
 import axios from "axios";
 import { GoogleAuth } from "google-auth-library";
+import { buildTrackedUrl } from "../utils/urlBuilder.js";
 
 function validateFirebaseConfig(firebaseConfig) {
   if (!firebaseConfig?.projectId) {
@@ -50,7 +51,10 @@ async function sendSingleMessage(data) {
       body
     },
     data: {
-      redirect_url: redirectUrl || ""
+    redirect_url: buildTrackedUrl(
+        redirectUrl,
+        data.campaignName || "push_campaign"
+    )
     }
   };
 

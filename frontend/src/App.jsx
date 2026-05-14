@@ -131,7 +131,8 @@ export default function App() {
       audienceType: campaign.audienceType,
       audienceValue: campaign.audienceValue,
       sendDate: campaign.sendDate,
-      sendTime: campaign.sendTime
+      sendTime: campaign.sendTime,
+      campaignName: campaign.name
     });
   }
 
