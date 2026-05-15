@@ -265,7 +265,9 @@ export default function CampaignForm({
           onChange={handleChange}
         >
           <option value="token">Token único</option>
+          <option value="token_list">Lista de tokens</option>
           <option value="topic">Tópico Firebase</option>
+          <option value="condition">Condição de tópicos</option>
         </select>
 
         <div>

@@ -127,12 +127,12 @@ export default function App() {
   function handleChooseOption(option) {
     setSelectedNotification({
       ...option,
+      campaignName: campaign.name,
       redirectUrl: campaign.redirectUrl,
       audienceType: campaign.audienceType,
       audienceValue: campaign.audienceValue,
       sendDate: campaign.sendDate,
-      sendTime: campaign.sendTime,
-      campaignName: campaign.name
+      sendTime: campaign.sendTime
     });
   }
 
@@ -178,7 +178,10 @@ export default function App() {
       });
 
       if (response.data.success) {
-        showModal("Sucesso", "Notificação enviada com sucesso!");
+        showModal(
+          "Sucesso",
+          "Notificação enviada com sucesso para o Firebase."
+        );
       }
     } catch (error) {
       showModal(

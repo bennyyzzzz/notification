@@ -22,7 +22,10 @@ async function getAccessToken(firebaseConfig) {
   const auth = new GoogleAuth({
     credentials: {
       client_email: firebaseConfig.clientEmail,
-      private_key: firebaseConfig.privateKey.replace(/\\n/g, "\n")
+      private_key: firebaseConfig.privateKey
+        .replace(/\\n/g, "\n")
+        .replace(/^"|"$/g, "")
+        .trim()
     },
     scopes: ["https://www.googleapis.com/auth/firebase.messaging"]
   });
@@ -40,10 +43,13 @@ async function sendSingleMessage(data) {
     redirectUrl,
     audienceType,
     audienceValue,
-    firebaseConfig
+    firebaseConfig,
+    campaignName
   } = data;
 
   const accessToken = await getAccessToken(firebaseConfig);
+
+  const trackedUrl = buildTrackedUrl(redirectUrl, campaignName);
 
   const message = {
     notification: {
@@ -51,10 +57,7 @@ async function sendSingleMessage(data) {
       body
     },
     data: {
-    redirect_url: buildTrackedUrl(
-        redirectUrl,
-        data.campaignName || "push_campaign"
-    )
+      redirect_url: trackedUrl
     }
   };
 
@@ -72,9 +75,7 @@ async function sendSingleMessage(data) {
 
   const response = await axios.post(
     `https://fcm.googleapis.com/v1/projects/${firebaseConfig.projectId}/messages:send`,
-    {
-      message
-    },
+    { message },
     {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -83,15 +84,24 @@ async function sendSingleMessage(data) {
     }
   );
 
-  return response.data;
+  return {
+    firebaseResponse: response.data,
+    trackedUrl
+  };
 }
 
 export async function sendFirebaseNotification(data) {
+  validateFirebaseConfig(data.firebaseConfig);
+
   if (data.audienceType === "token_list") {
     const tokens = data.audienceValue
       .split(/[\n,]+/)
       .map((token) => token.trim())
       .filter(Boolean);
+
+    if (tokens.length === 0) {
+      throw new Error("Lista de tokens vazia.");
+    }
 
     const results = [];
 

@@ -13,7 +13,7 @@ router.post("/", async (req, res) => {
     res.json({
       success: true,
       message: "Notificação enviada com sucesso.",
-      firebaseResult: result
+      result
     });
   } catch (error) {
     console.error("Erro ao enviar push:", error.response?.data || error.message);
