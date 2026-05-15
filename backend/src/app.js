@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 
+import sendHistoryRoutes from "./routes/sendHistoryRoutes.js";
 import aiRoutes from "./routes/aiRoutes.js";
 import queueRoutes from "./routes/queueRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
@@ -26,5 +27,6 @@ app.get("/", (req, res) => {
 app.use("/generate-push-options", aiRoutes);
 app.use("/queue", queueRoutes);
 app.use("/send-notification", notificationRoutes);
+app.use("/send-history", sendHistoryRoutes);
 app.use("/firebase-integrations", firebaseIntegrationRoutes);
 export default app;

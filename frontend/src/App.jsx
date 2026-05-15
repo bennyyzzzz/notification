@@ -6,8 +6,12 @@ import GeneratedOptions from "./components/GeneratedOptions";
 import EditNotification from "./components/EditNotification";
 import QueueCheckout from "./components/QueueCheckout";
 import FirebaseIntegrations from "./components/FirebaseIntegrations";
+import HistoryPage from "./components/HistoryPage";
 
 export default function App() {
+  const [activePage, setActivePage] = useState("create");
+  const [selectedIntegrationId, setSelectedIntegrationId] = useState("");
+
   const [campaign, setCampaign] = useState({
     name: "",
     theme: "",
@@ -30,15 +34,15 @@ export default function App() {
     tone: "direto"
   });
 
-  const [selectedIntegrationId, setSelectedIntegrationId] = useState("");
-
   const [errors, setErrors] = useState({});
   const [options, setOptions] = useState([]);
   const [selectedNotification, setSelectedNotification] = useState(null);
+
   const [queue, setQueue] = useState(() => {
     const savedQueue = localStorage.getItem("pushQueue");
     return savedQueue ? JSON.parse(savedQueue) : [];
   });
+
   const [modal, setModal] = useState({
     open: false,
     title: "",
@@ -49,21 +53,32 @@ export default function App() {
     localStorage.setItem("pushQueue", JSON.stringify(queue));
   }, [queue]);
 
+  function showModal(title, message) {
+    setModal({
+      open: true,
+      title,
+      message
+    });
+  }
+
   function validateCampaign() {
     const newErrors = {};
 
     if (!campaign.name.trim()) newErrors.name = true;
     if (!campaign.theme.trim()) newErrors.theme = true;
     if (!campaign.segment.trim()) newErrors.segment = true;
-
-    if (campaign.segment === "Outro" && !campaign.customSegment.trim()) {
-      newErrors.customSegment = true;
-    }
-
     if (!campaign.redirectUrl.trim()) newErrors.redirectUrl = true;
     if (!campaign.sendDate.trim()) newErrors.sendDate = true;
     if (!campaign.sendTime.trim()) newErrors.sendTime = true;
     if (!campaign.audienceValue.trim()) newErrors.audienceValue = true;
+
+    if (!selectedIntegrationId) {
+      newErrors.firebaseIntegration = true;
+    }
+
+    if (campaign.segment === "Outro" && !campaign.customSegment.trim()) {
+      newErrors.customSegment = true;
+    }
 
     if (campaign.hasPromotion && !campaign.promotionDescription.trim()) {
       newErrors.promotionDescription = true;
@@ -90,7 +105,10 @@ export default function App() {
     const isValid = validateCampaign();
 
     if (!isValid) {
-      showModal("Campos obrigatórios", "Preencha os campos destacados em vermelho antes de continuar.");
+      showModal(
+        "Campos obrigatórios",
+        "Preencha os campos destacados antes de continuar."
+      );
       return;
     }
 
@@ -106,7 +124,7 @@ export default function App() {
       const response = await api.post("/generate-push-options", campaignToSend);
       setOptions(response.data);
     } catch (error) {
-      showModal("Erro ao gerar opções com IA.");
+      showModal("Erro", "Erro ao gerar opções com IA.");
       console.log(error);
     }
   }
@@ -130,8 +148,9 @@ export default function App() {
 
       setQueue((prev) => [...prev, response.data]);
       setSelectedNotification(null);
+      setActivePage("checkout");
     } catch (error) {
-      showModal("Erro ao adicionar na fila.");
+      showModal("Erro", "Erro ao adicionar na fila.");
       console.log(error);
     }
   }
@@ -139,10 +158,9 @@ export default function App() {
   async function handleRemoveFromQueue(id) {
     try {
       await api.delete(`/queue/${id}`);
-
       setQueue((prev) => prev.filter((item) => item.id !== id));
     } catch (error) {
-      showModal("Erro ao remover da fila.");
+      showModal("Erro", "Erro ao remover da fila.");
       console.log(error);
     }
   }
@@ -150,10 +168,9 @@ export default function App() {
   async function handleDuplicateQueueItem(id) {
     try {
       const response = await api.post(`/queue/${id}/duplicate`);
-
       setQueue((prev) => [...prev, response.data]);
     } catch (error) {
-      showModal("Erro ao duplicar item.");
+      showModal("Erro", "Erro ao duplicar item.");
       console.log(error);
     }
   }
@@ -163,6 +180,10 @@ export default function App() {
       const response = await api.post("/send-notification", item);
 
       if (response.data.success) {
+        setQueue((prev) =>
+          prev.filter((queueItem) => queueItem.id !== item.id)
+        );
+
         showModal(
           "Sucesso",
           "Notificação enviada com sucesso para o Firebase."
@@ -180,73 +201,102 @@ export default function App() {
     }
   }
 
-  function showModal(title, message) {
-    setModal({
-      open: true,
-      title,
-      message
-    });
-  }
-
   return (
     <main className="container">
       <header className="hero">
         <h1>Gerador Push Notification</h1>
       </header>
-      
-      <FirebaseIntegrations
-        selectedIntegrationId={selectedIntegrationId}
-        setSelectedIntegrationId={setSelectedIntegrationId}
-      />
 
-      <CampaignForm
-        campaign={campaign}
-        setCampaign={setCampaign}
-        errors={errors}
-        setErrors={setErrors}
-        onGenerate={handleGenerateOptions}
-      />
+      <nav className="tabs">
+        <button
+          className={activePage === "history" ? "active-tab" : ""}
+          onClick={() => setActivePage("history")}
+        >
+          Histórico
+        </button>
 
-      <GeneratedOptions
-        options={options}
-        onChoose={handleChooseOption}
-      />
+        <button
+          className={activePage === "create" ? "active-tab" : ""}
+          onClick={() => setActivePage("create")}
+        >
+          Criação
+        </button>
 
-      {selectedNotification && (
-        <EditNotification
-          notification={selectedNotification}
-          setNotification={setSelectedNotification}
-          onAddToQueue={handleAddToQueue}
+        <button
+          className={activePage === "checkout" ? "active-tab" : ""}
+          onClick={() => setActivePage("checkout")}
+        >
+          Checkout
+        </button>
+      </nav>
+
+      {activePage === "history" && <HistoryPage />}
+
+      {activePage === "create" && (
+        <>
+          <FirebaseIntegrations
+            selectedIntegrationId={selectedIntegrationId}
+            setSelectedIntegrationId={setSelectedIntegrationId}
+          />
+
+          {errors.firebaseIntegration && (
+            <p className="field-error">
+              Selecione uma integração Firebase antes de gerar.
+            </p>
+          )}
+
+          <CampaignForm
+            campaign={campaign}
+            setCampaign={setCampaign}
+            errors={errors}
+            setErrors={setErrors}
+            onGenerate={handleGenerateOptions}
+          />
+
+          <GeneratedOptions
+            options={options}
+            onChoose={handleChooseOption}
+          />
+
+          {selectedNotification && (
+            <EditNotification
+              notification={selectedNotification}
+              setNotification={setSelectedNotification}
+              onAddToQueue={handleAddToQueue}
+            />
+          )}
+        </>
+      )}
+
+      {activePage === "checkout" && (
+        <QueueCheckout
+          queue={queue}
+          onRemove={handleRemoveFromQueue}
+          onDuplicate={handleDuplicateQueueItem}
+          onSend={handleSendNotification}
         />
       )}
 
       {modal.open && (
-  <div className="modal-overlay">
-        <div className="modal">
-          <h2>{modal.title}</h2>
-          <p>{modal.message}</p>
+        <div className="modal-overlay">
+          <div className="modal">
+            <h2>{modal.title}</h2>
+            <p>{modal.message}</p>
 
-          <button
-            onClick={() =>
-              setModal({
-                open: false,
-                title: "",
-                message: ""
-              })
-            }
-          >
-            Entendi
-          </button>
+            <button
+              onClick={() =>
+                setModal({
+                  open: false,
+                  title: "",
+                  message: ""
+                })
+              }
+            >
+              Entendi
+            </button>
+          </div>
         </div>
-      </div>
-  )}
-
-      <QueueCheckout
-        queue={queue}
-        onRemove={handleRemoveFromQueue}
-        onDuplicate={handleDuplicateQueueItem}
-        onSend={handleSendNotification}
-      />
+      )}
     </main>
   );
 }

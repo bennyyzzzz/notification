@@ -285,3 +285,158 @@ textarea.input-error {
 .success-text {
   color: #7ee787;
 }
+
+.history-list {
+  display: grid;
+  gap: 12px;
+}
+
+.history-item {
+  border: 1px solid #333;
+  background: #141414;
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.history-item p {
+  color: #ccc;
+}
+
+.history-item small {
+  color: #888;
+}
+
+.section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.section-header h2 {
+  margin-bottom: 6px;
+}
+
+.history-list {
+  display: grid;
+  gap: 16px;
+}
+
+.history-item {
+  border: 1px solid #333;
+  background: #141414;
+  border-radius: 16px;
+  padding: 18px;
+}
+
+.history-main {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.history-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.history-title-row h3 {
+  margin: 0;
+}
+
+.history-body {
+  color: #ddd;
+  margin-bottom: 0;
+}
+
+.history-date {
+  color: #888;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.history-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.history-grid div {
+  background: #0f0f0f;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.history-grid span {
+  display: block;
+  color: #888;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.history-grid strong,
+.history-grid a {
+  color: #f5f5f5;
+  font-size: 13px;
+}
+
+.text-break {
+  word-break: break-word;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.status-sent {
+  background: #123d24;
+  color: #7ee787;
+}
+
+.status-failed {
+  background: #3d1212;
+  color: #ff6b6b;
+}
+
+.status-scheduled {
+  background: #332b10;
+  color: #ffd166;
+}
+
+.status-queued {
+  background: #102c3d;
+  color: #58a6ff;
+}
+
+.history-error {
+  margin-top: 14px;
+  border: 1px solid #5a1414;
+  background: #220d0d;
+  color: #ffb4b4;
+  padding: 12px;
+  border-radius: 12px;
+}
+
+@media (max-width: 768px) {
+  .section-header,
+  .history-main {
+    flex-direction: column;
+  }
+
+  .history-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .history-date {
+    white-space: normal;
+  }
+}

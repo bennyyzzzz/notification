@@ -94,9 +94,23 @@ async function sendSingleMessage(data) {
     }
   );
 
+  const history = await prisma.sendHistory.create({
+    data: {
+      campaignName,
+      title,
+      body,
+      audienceType,
+      audienceValue,
+      trackedUrl,
+      status: "sent",
+      firebaseMessageId: response.data.name || null
+    }
+  });
+
   return {
     firebaseResponse: response.data,
-    trackedUrl
+    trackedUrl,
+    history
   };
 }
 
