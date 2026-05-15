@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { api } from "./api/api";
-import FirebaseConfig from "./components/FirebaseConfig";
 
 import CampaignForm from "./components/CampaignForm";
 import GeneratedOptions from "./components/GeneratedOptions";
 import EditNotification from "./components/EditNotification";
 import QueueCheckout from "./components/QueueCheckout";
+import FirebaseIntegrations from "./components/FirebaseIntegrations";
 
 export default function App() {
   const [campaign, setCampaign] = useState({
@@ -29,17 +29,8 @@ export default function App() {
     audienceValue: "",
     tone: "direto"
   });
-  const [firebaseConfig, setFirebaseConfig] = useState(() => {
-  const saved = localStorage.getItem("firebaseConfig");
 
-    return saved
-      ? JSON.parse(saved)
-      : {
-          projectId: "",
-          clientEmail: "",
-          privateKey: ""
-        };
-  });
+  const [selectedIntegrationId, setSelectedIntegrationId] = useState("");
 
   const [errors, setErrors] = useState({});
   const [options, setOptions] = useState([]);
@@ -57,10 +48,6 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem("pushQueue", JSON.stringify(queue));
   }, [queue]);
-
-  useEffect(() => {
-    localStorage.setItem("firebaseConfig", JSON.stringify(firebaseConfig));
-  }, [firebaseConfig]);
 
   function validateCampaign() {
     const newErrors = {};
@@ -131,6 +118,7 @@ export default function App() {
       redirectUrl: campaign.redirectUrl,
       audienceType: campaign.audienceType,
       audienceValue: campaign.audienceValue,
+      firebaseIntegrationId: selectedIntegrationId,
       sendDate: campaign.sendDate,
       sendTime: campaign.sendTime
     });
@@ -172,10 +160,7 @@ export default function App() {
 
   async function handleSendNotification(item) {
     try {
-      const response = await api.post("/send-notification", {
-        ...item,
-        firebaseConfig
-      });
+      const response = await api.post("/send-notification", item);
 
       if (response.data.success) {
         showModal(
@@ -208,10 +193,10 @@ export default function App() {
       <header className="hero">
         <h1>Gerador Push Notification</h1>
       </header>
-
-      <FirebaseConfig
-        firebaseConfig={firebaseConfig}
-        setFirebaseConfig={setFirebaseConfig}
+      
+      <FirebaseIntegrations
+        selectedIntegrationId={selectedIntegrationId}
+        setSelectedIntegrationId={setSelectedIntegrationId}
       />
 
       <CampaignForm

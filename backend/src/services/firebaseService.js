@@ -1,27 +1,36 @@
 import axios from "axios";
 import { GoogleAuth } from "google-auth-library";
+import { prisma } from "../database/prisma.js";
+import { decrypt } from "../utils/crypto.js";
 import { buildTrackedUrl } from "../utils/urlBuilder.js";
 
-function validateFirebaseConfig(firebaseConfig) {
-  if (!firebaseConfig?.projectId) {
-    throw new Error("Project ID do Firebase é obrigatório.");
+async function getFirebaseConfig(firebaseIntegrationId) {
+  if (!firebaseIntegrationId) {
+    throw new Error("Integração Firebase é obrigatória.");
   }
 
-  if (!firebaseConfig?.clientEmail) {
-    throw new Error("Client Email do Firebase é obrigatório.");
+  const integration = await prisma.firebaseIntegration.findFirst({
+    where: {
+      id: Number(firebaseIntegrationId),
+      active: true
+    }
+  });
+
+  if (!integration) {
+    throw new Error("Integração Firebase não encontrada.");
   }
 
-  if (!firebaseConfig?.privateKey) {
-    throw new Error("Private Key do Firebase é obrigatória.");
-  }
+  return {
+    projectId: integration.projectId,
+    clientEmail: integration.clientEmail,
+    privateKey: decrypt(integration.encryptedPrivateKey)
+  };
 }
 
 async function getAccessToken(firebaseConfig) {
-  validateFirebaseConfig(firebaseConfig);
-
   const auth = new GoogleAuth({
     credentials: {
-      client_email: firebaseConfig.clientEmail,
+      client_email: firebaseConfig.clientEmail.trim(),
       private_key: firebaseConfig.privateKey
         .replace(/\\n/g, "\n")
         .replace(/^"|"$/g, "")
@@ -43,10 +52,11 @@ async function sendSingleMessage(data) {
     redirectUrl,
     audienceType,
     audienceValue,
-    firebaseConfig,
-    campaignName
+    campaignName,
+    firebaseIntegrationId
   } = data;
 
+  const firebaseConfig = await getFirebaseConfig(firebaseIntegrationId);
   const accessToken = await getAccessToken(firebaseConfig);
 
   const trackedUrl = buildTrackedUrl(redirectUrl, campaignName);
@@ -91,8 +101,6 @@ async function sendSingleMessage(data) {
 }
 
 export async function sendFirebaseNotification(data) {
-  validateFirebaseConfig(data.firebaseConfig);
-
   if (data.audienceType === "token_list") {
     const tokens = data.audienceValue
       .split(/[\n,]+/)

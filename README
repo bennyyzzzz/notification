@@ -1,213 +1,236 @@
-# Auto Notify — Gerador de Push Notification com IA
+# Auto Notify
 
-## Visão Geral
+Sistema web para criação, gerenciamento, agendamento e envio de notificações push utilizando Firebase Cloud Messaging HTTP v1 API.
 
-O Auto Notify é uma ferramenta web para criação, geração, edição, organização e envio de notificações push utilizando Inteligência Artificial e Firebase Cloud Messaging HTTP v1.
+O projeto foi desenvolvido com foco em:
 
-O sistema foi pensado para equipes de:
-
-* CRM
-* Marketing
-* Growth
-* E-commerce
-* Apps mobile
-* Retenção de usuários
-* Push marketing
-
-A aplicação permite:
-
-* Criar campanhas
-* Gerar múltiplas variações com IA
-* Editar notificações manualmente
-* Validar regras de copy
-* Organizar notificações em checkout/fila
-* Enviar para Firebase
-* Adicionar UTMs automaticamente
-* Trabalhar com token, lista de tokens e tópicos
-* Salvar dados localmente para evitar perda ao atualizar a página
+* geração de notificações com IA;
+* gerenciamento de campanhas;
+* fila de envio;
+* integração segura com Firebase;
+* estrutura escalável para múltiplos apps/clientes;
+* evolução futura para SaaS.
 
 ---
 
-# Tecnologias Utilizadas
+# Tecnologias
 
 ## Frontend
 
 * React
 * Vite
 * Axios
-* CSS puro
+* CSS
 
 ## Backend
 
 * Node.js
 * Express
-* Axios
-* Google Auth Library
-* OpenAI SDK
-
-## Integrações
-
-* Firebase Cloud Messaging HTTP v1 API
+* Prisma ORM
+* SQLite
 * OpenAI API
-
----
-
-# Arquitetura do Projeto
-
-```txt
-Frontend React
-↓
-Backend Express
-↓
-OpenAI API
-↓
-Firebase Cloud Messaging HTTP v1
-↓
-Dispositivo/App
-```
+* Firebase Cloud Messaging HTTP v1
+* Google Auth Library
 
 ---
 
 # Estrutura do Projeto
 
 ```txt
-auto-notify/
-│
+notification/
 ├── backend/
+│   ├── prisma/
+│   │   ├── migrations/
+│   │   ├── schema.prisma
+│   │   └── seed.js
+│   │
 │   ├── src/
+│   │   ├── database/
 │   │   ├── routes/
-│   │   │   ├── aiRoutes.js
-│   │   │   ├── notificationRoutes.js
-│   │   │   └── queueRoutes.js
-│   │   │
 │   │   ├── services/
-│   │   │   ├── aiService.js
-│   │   │   ├── firebaseService.js
-│   │   │   └── validationService.js
-│   │   │
 │   │   ├── utils/
-│   │   │   └── urlBuilder.js
-│   │   │
 │   │   ├── app.js
 │   │   └── server.js
 │   │
 │   ├── .env
+│   ├── prisma.config.ts
 │   └── package.json
 │
-└── frontend/
-    ├── src/
-    │   ├── api/
-    │   │   └── api.js
-    │   │
-    │   ├── components/
-    │   │   ├── CampaignForm.jsx
-    │   │   ├── EditNotification.jsx
-    │   │   ├── FirebaseConfig.jsx
-    │   │   ├── GeneratedOptions.jsx
-    │   │   └── QueueCheckout.jsx
-    │   │
-    │   ├── App.jsx
-    │   ├── main.jsx
-    │   └── styles.css
-    │
-    └── package.json
+├── frontend/
+│   ├── src/
+│   │   ├── api/
+│   │   ├── components/
+│   │   ├── styles/
+│   │   ├── App.jsx
+│   │   └── main.jsx
+│   │
+│   └── package.json
+│
+└── README.md
 ```
 
 ---
 
-# Funcionalidades
+# Funcionalidades atuais
 
-## Criação de campanhas
+## Integrações Firebase
 
-Permite:
+* Upload do JSON da Service Account
+* Leitura automática do JSON
+* Extração automática:
 
-* Nome da campanha
-* Tema da campanha
-* Segmento
-* Tom de voz
-* Promoção
-* Produto
-* Categoria
-* Cupom
-* Desconto
-* Data e horário
-* Público-alvo
-* Link de redirecionamento
+  * project_id
+  * client_email
+  * private_key
+* Salvamento da private key criptografada no backend
+* Seleção de integração ativa
 
 ---
 
 ## Geração com IA
 
-O sistema envia um prompt estruturado para IA.
+A IA gera:
 
-A IA retorna:
-
-```json
-[
-  {
-    "id": 1,
-    "title": "Oferta especial 🔥",
-    "body": "Confira agora e aproveite essa condição.",
-    "cta": "Confira agora",
-    "strategy": "Urgência promocional"
-  }
-]
-```
+* 5 opções de push notifications
+* CTA
+* estratégia utilizada
+* adaptação de tom
+* adaptação por segmento
 
 Regras:
 
-* Título até 5 palavras
-* Corpo até 10 palavras
+* título até 5 palavras
+* corpo até 10 palavras
 * CTA obrigatório
-* Emojis moderados
-* Linguagem adaptada ao segmento
-* Sem promessas falsas
+* emojis moderados
+* linguagem adaptada
 
 ---
 
-## Edição manual
+## Checkout / fila
 
-Após selecionar uma opção:
-
-* O usuário pode editar
-* O sistema valida quantidade de palavras
-* Bloqueia avanço se inválido
-
----
-
-## Checkout/Fila
-
-Permite:
-
-* Salvar notificações
-* Duplicar
-* Remover
-* Enviar depois
-* Persistência em cache/localStorage
+* selecionar push
+* editar push
+* remover
+* duplicar
+* salvar em cache
+* enviar manualmente
 
 ---
 
-## Integração Firebase
+## Firebase Cloud Messaging
 
-Suporta:
+Compatível com:
 
-* Token único
-* Lista de tokens
-* Tópicos Firebase
-* Condição de tópicos
+* token único
+* lista de tokens
+* tópicos
+* conditions
+
+Utilizando:
+
+```txt
+Firebase Cloud Messaging HTTP v1 API
+```
+
+---
+
+# Segurança
+
+## Chaves Firebase
+
+As credenciais:
+
+* NÃO ficam no localStorage;
+* NÃO ficam expostas na tela;
+* NÃO são persistidas no frontend;
+* são criptografadas no backend.
+
+Apenas estes dados são salvos:
+
+* project_id
+* client_email
+* encrypted_private_key
+
+---
+
+## Criptografia
+
+A private key é criptografada utilizando:
+
+```txt
+AES-256-CBC
+```
+
+Arquivo:
+
+```txt
+backend/src/utils/crypto.js
+```
 
 ---
 
 # Configuração do Projeto
 
-# Backend
+## Backend
 
-## Instalação
+Entrar na pasta:
 
 ```bash
 cd backend
+```
+
+Instalar dependências:
+
+```bash
 npm install
 ```
+
+---
+
+## Variáveis de ambiente
+
+Criar:
+
+```txt
+backend/.env
+```
+
+Exemplo:
+
+```env
+PORT=3001
+
+DATABASE_URL="file:./dev.db"
+
+OPENAI_API_KEY=SUA_OPENAI_API_KEY
+
+ENCRYPTION_SECRET=SUA_CHAVE_DE_CRIPTOGRAFIA
+```
+
+---
+
+## Prisma
+
+Gerar banco:
+
+```bash
+npx prisma migrate dev --name init
+```
+
+Gerar client:
+
+```bash
+npx prisma generate
+```
+
+Rodar seed:
+
+```bash
+npx prisma db seed
+```
+
+---
 
 ## Rodar backend
 
@@ -225,20 +248,25 @@ http://localhost:3001
 
 # Frontend
 
-## Instalação
+Entrar na pasta:
 
 ```bash
 cd frontend
+```
+
+Instalar dependências:
+
+```bash
 npm install
 ```
 
-## Rodar frontend
+Rodar projeto:
 
 ```bash
 npm run dev
 ```
 
-Aplicação:
+Frontend:
 
 ```txt
 http://localhost:5173
@@ -246,174 +274,158 @@ http://localhost:5173
 
 ---
 
-# Configuração OpenAI
+# Fluxo da aplicação
 
-## Criar chave
+## 1. Upload integração Firebase
 
-Acesse:
+O usuário:
 
-```txt
-https://platform.openai.com/api-keys
-```
-
-## Backend `.env`
-
-```env
-OPENAI_API_KEY=sua_chave
-```
+* faz upload do JSON Firebase;
+* sistema valida;
+* backend criptografa e salva.
 
 ---
 
-# Configuração Firebase
+## 2. Selecionar integração ativa
 
-## Criar projeto
+A integração ativa será utilizada:
 
-Acesse:
-
-```txt
-https://console.firebase.google.com
-```
-
----
-
-## Ativar Cloud Messaging
-
-Dentro do projeto:
-
-```txt
-Build
-→ Cloud Messaging
-```
+* no envio;
+* no agendamento;
+* na fila;
+* no histórico.
 
 ---
 
-## Gerar Service Account
+## 3. Criar campanha
 
-```txt
-Configurações do Projeto
-→ Contas de serviço
-→ Gerar nova chave privada
-```
+Campos:
+
+* nome;
+* segmento;
+* tema;
+* tom;
+* cupom;
+* desconto;
+* produto;
+* categoria;
+* redirect URL;
+* destino.
 
 ---
 
-## Campos necessários
+## 4. Geração IA
 
-O sistema usa:
+Backend envia prompt estruturado para IA.
+
+A IA retorna:
 
 ```json
-{
-  "project_id": "meu-projeto",
-  "client_email": "firebase-adminsdk@meu-projeto.iam.gserviceaccount.com",
-  "private_key": "-----BEGIN PRIVATE KEY-----..."
-}
-```
-
-Preencher no frontend:
-
-* Project ID
-* Client Email
-* Private Key
-
----
-
-# Tipos de envio
-
-## Token único
-
-```txt
-Destino: token
-```
-
-Usado para:
-
-* testes
-* envios individuais
-* QA
-
----
-
-## Lista de tokens
-
-```txt
-Destino: token_list
-```
-
-Aceita:
-
-```txt
-token1
-token2
-token3
-```
-
-Ou:
-
-```txt
-token1, token2, token3
+[
+  {
+    "id": 1,
+    "title": "Oferta liberada 🚀",
+    "body": "Veja agora e aproveite.",
+    "cta": "Comprar agora",
+    "strategy": "Urgência"
+  }
+]
 ```
 
 ---
 
-## Tópico Firebase
+## 5. Checkout
+
+Usuário:
+
+* escolhe push;
+* edita;
+* salva em fila;
+* envia.
+
+---
+
+# Estrutura do banco
+
+## Company
 
 ```txt
-Destino: topic
-```
-
-Exemplo:
-
-```txt
-promocoes
-clientes_vip
-black_friday
+Empresa
 ```
 
 ---
 
-## Condição de tópicos
+## App
 
 ```txt
-Destino: condition
-```
-
-Exemplo:
-
-```txt
-'clientes_vip' in topics && 'promocoes' in topics
+Aplicações da empresa
 ```
 
 ---
 
-# UTM Automática
-
-O sistema adiciona automaticamente:
+## FirebaseIntegration
 
 ```txt
-utm_source=firebase
-utm_medium=push
-utm_campaign=nome_da_campanha
-```
-
-## Exemplo
-
-Entrada:
-
-```txt
-https://loja.com/componentes
-```
-
-Saída:
-
-```txt
-https://loja.com/componentes?utm_source=firebase&utm_medium=push&utm_campaign=black_friday
+Integrações Firebase
 ```
 
 ---
 
-# Endpoints Backend
+## Campaign
 
-## Gerar notificações
+```txt
+Campanhas
+```
+
+---
+
+## Notification
+
+```txt
+Fila e notificações
+```
+
+---
+
+## SendHistory
+
+```txt
+Histórico de envio
+```
+
+---
+
+# Endpoints
+
+## Integrações Firebase
+
+### Criar integração
+
+```http
+POST /firebase-integrations
+```
+
+---
+
+### Listar integrações
+
+```http
+GET /firebase-integrations
+```
+
+---
+
+### Remover integração
+
+```http
+DELETE /firebase-integrations/:id
+```
+
+---
+
+## IA
+
+### Gerar notificações
 
 ```http
 POST /generate-push-options
@@ -421,47 +433,9 @@ POST /generate-push-options
 
 ---
 
-## Adicionar fila
+## Envio
 
-```http
-POST /queue
-```
-
----
-
-## Buscar fila
-
-```http
-GET /queue
-```
-
----
-
-## Atualizar fila
-
-```http
-PUT /queue/:id
-```
-
----
-
-## Duplicar item
-
-```http
-POST /queue/:id/duplicate
-```
-
----
-
-## Remover item
-
-```http
-DELETE /queue/:id
-```
-
----
-
-## Enviar push
+### Enviar push
 
 ```http
 POST /send-notification
@@ -469,94 +443,59 @@ POST /send-notification
 
 ---
 
-# Exemplo de Payload Firebase
+# UTM automática
 
-```json
-{
-  "message": {
-    "token": "TOKEN_AQUI",
-    "notification": {
-      "title": "Oferta especial 🔥",
-      "body": "Confira agora e aproveite essa condição."
-    },
-    "data": {
-      "redirect_url": "https://loja.com/produto"
-    }
-  }
-}
-```
-
----
-
-# Fluxo do Sistema
+O sistema adiciona automaticamente:
 
 ```txt
-Usuário cria campanha
-↓
-IA gera 5 opções
-↓
-Usuário escolhe
-↓
-Usuário edita
-↓
-Sistema valida
-↓
-Vai para checkout
-↓
-Usuário envia
-↓
-Backend autentica no Firebase
-↓
-Push enviada
+utm_source=firebase
+utm_medium=push
+utm_campaign=nome-da-campanha
 ```
 
----
-
-# Persistência Local
-
-O sistema utiliza:
+Exemplo:
 
 ```txt
-localStorage
+https://site.com/produto?utm_source=firebase&utm_medium=push&utm_campaign=black-friday
 ```
-
-Para salvar:
-
-* fila de notificações
-* configuração Firebase
-
-Evita perda ao atualizar a página.
 
 ---
 
-# Segurança
+# Git Ignore
 
-## Nunca enviar para GitHub
-
-Adicionar ao `.gitignore`:
+Arquivos ignorados:
 
 ```txt
 .env
-service-account.json
 node_modules
+*.log
+dev.db
+service-account.json
 ```
 
+Nunca subir:
+
+* private keys;
+* .env;
+* banco SQLite;
+* service accounts.
+
 ---
 
-## Produção
+# Observações
 
-Atualmente o MVP salva credenciais Firebase no navegador.
+Este projeto utiliza Firebase Cloud Messaging HTTP v1.
 
-Para produção o ideal é:
+Campanhas enviadas via API:
 
 ```txt
-Frontend
-↓
-Envia credencial uma vez
-↓
-Backend criptografa
-↓
-Salva no banco
-↓
-Frontend nunca vê novamente
+NÃO aparecem automaticamente no Firebase Messaging Console.
+```
+
+Isso é um comportamento normal da API HTTP v1.
+
 ---
+
+# Licença
+
+Projeto privado / MVP experimental.

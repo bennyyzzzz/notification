@@ -219,3 +219,69 @@ textarea.input-error {
   margin-top: 16px;
   width: 100%;
 }
+
+.divider {
+  border: none;
+  border-top: 1px solid #333;
+  margin: 24px 0;
+}
+
+.integration-list {
+  margin-top: 16px;
+  display: grid;
+  gap: 12px;
+}
+
+.integration-item {
+  border: 1px solid #333;
+  background: #141414;
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+}
+
+.integration-item p {
+  margin: 4px 0;
+  color: #aaa;
+}
+
+.integration-item small {
+  color: #777;
+}
+
+.upload-box {
+  margin: 18px 0;
+}
+
+.upload-label {
+  display: inline-block;
+  background: #a60805;
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.upload-label input {
+  display: none;
+}
+
+.json-preview {
+  border: 1px solid #333;
+  background: #141414;
+  border-radius: 14px;
+  padding: 16px;
+  margin-top: 16px;
+}
+
+.json-preview h3 {
+  margin-top: 0;
+}
+
+.success-text {
+  color: #7ee787;
+}

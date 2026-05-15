@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Company {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  apps App[]
+}
+
+model App {
+  id        Int      @id @default(autoincrement())
+  companyId Int
+  name      String
+  platform  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+  firebaseIntegrations FirebaseIntegration[]
+  campaigns Campaign[]
+}
+
+model FirebaseIntegration {
+  id                  Int      @id @default(autoincrement())
+  appId               Int
+  name                String
+  projectId           String
+  clientEmail         String
+  encryptedPrivateKey String
+  active              Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  app App @relation(fields: [appId], references: [id])
+}
+
+model Campaign {
+  id          Int      @id @default(autoincrement())
+  appId       Int
+  name        String
+  theme       String?
+  segment     String?
+  tone        String?
+  redirectUrl String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  app App @relation(fields: [appId], references: [id])
+  notifications Notification[]
+}
+
+model Notification {
+  id             Int      @id @default(autoincrement())
+  campaignId     Int?
+  campaignName   String?
+  title          String
+  body           String
+  redirectUrl    String?
+  audienceType   String
+  audienceValue  String
+  status         String   @default("queued")
+  scheduledAt    DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  campaign Campaign? @relation(fields: [campaignId], references: [id])
+  sendHistories SendHistory[]
+}
+
+model SendHistory {
+  id                Int      @id @default(autoincrement())
+  notificationId    Int?
+  campaignName      String?
+  title             String
+  body              String
+  audienceType      String
+  audienceValue     String
+  trackedUrl        String?
+  status            String
+  firebaseMessageId String?
+  errorMessage      String?
+  sentAt            DateTime @default(now())
+
+  notification Notification? @relation(fields: [notificationId], references: [id])
+}

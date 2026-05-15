@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import aiRoutes from "./routes/aiRoutes.js";
 import queueRoutes from "./routes/queueRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
+import firebaseIntegrationRoutes from "./routes/firebaseIntegrationRoutes.js";
 
 dotenv.config();
 
@@ -25,5 +26,5 @@ app.get("/", (req, res) => {
 app.use("/generate-push-options", aiRoutes);
 app.use("/queue", queueRoutes);
 app.use("/send-notification", notificationRoutes);
-
+app.use("/firebase-integrations", firebaseIntegrationRoutes);
 export default app;

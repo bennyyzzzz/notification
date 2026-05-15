@@ -11,16 +11,12 @@ export function validatePush(data) {
     body,
     redirectUrl,
     audienceType,
-    audienceValue
+    audienceValue,
+    firebaseIntegrationId
   } = data;
 
-  if (!title) {
-    throw new Error("Título é obrigatório.");
-  }
-
-  if (!body) {
-    throw new Error("Corpo é obrigatório.");
-  }
+  if (!title) throw new Error("Título é obrigatório.");
+  if (!body) throw new Error("Corpo é obrigatório.");
 
   if (countWords(title) > 5) {
     throw new Error("O título deve ter no máximo 5 palavras.");
@@ -36,5 +32,9 @@ export function validatePush(data) {
 
   if (!audienceType || !audienceValue) {
     throw new Error("Token ou tópico é obrigatório.");
+  }
+
+  if (!firebaseIntegrationId) {
+    throw new Error("Selecione uma integração Firebase.");
   }
 }
