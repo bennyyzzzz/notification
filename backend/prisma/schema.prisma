@@ -58,18 +58,19 @@ model Campaign {
 }
 
 model Notification {
-  id             Int      @id @default(autoincrement())
-  campaignId     Int?
-  campaignName   String?
-  title          String
-  body           String
-  redirectUrl    String?
-  audienceType   String
-  audienceValue  String
-  status         String   @default("queued")
-  scheduledAt    DateTime?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id                    Int      @id @default(autoincrement())
+  campaignId            Int?
+  campaignName          String?
+  title                 String
+  body                  String
+  redirectUrl           String?
+  audienceType          String
+  audienceValue         String
+  firebaseIntegrationId Int?
+  status                String   @default("queued")
+  scheduledAt           DateTime?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 
   campaign Campaign? @relation(fields: [campaignId], references: [id])
   sendHistories SendHistory[]

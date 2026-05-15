@@ -38,20 +38,13 @@ export default function App() {
   const [options, setOptions] = useState([]);
   const [selectedNotification, setSelectedNotification] = useState(null);
 
-  const [queue, setQueue] = useState(() => {
-    const savedQueue = localStorage.getItem("pushQueue");
-    return savedQueue ? JSON.parse(savedQueue) : [];
-  });
+  const [queue, setQueue] = useState([]);
 
   const [modal, setModal] = useState({
     open: false,
     title: "",
     message: ""
   });
-
-  useEffect(() => {
-    localStorage.setItem("pushQueue", JSON.stringify(queue));
-  }, [queue]);
 
   function showModal(title, message) {
     setModal({
@@ -100,6 +93,15 @@ export default function App() {
 
     return Object.keys(newErrors).length === 0;
   }
+
+  async function loadQueue() {
+  const response = await api.get("/queue");
+    setQueue(response.data);
+  }
+
+  useEffect(() => {
+    loadQueue();
+  }, []);
 
   async function handleGenerateOptions() {
     const isValid = validateCampaign();
