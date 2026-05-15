@@ -1,3 +1,5 @@
+import MobilePreview from "./MobilePreview";
+
 function countWords(text) {
   return String(text || "")
     .trim()
@@ -37,32 +39,44 @@ export default function EditNotification({
     <section className="card">
       <h2>3. Editar notificação escolhida</h2>
 
-      <label>Título</label>
-      <input
-        value={notification.title || ""}
-        onChange={handleTitleChange}
-      />
+      <div className="edit-layout">
+        <div className="edit-form">
+          <label>Título</label>
+          <input
+            value={notification.title || ""}
+            onChange={handleTitleChange}
+          />
 
-      <p className={titleWords > 5 ? "error" : "muted"}>
-        {titleWords}/5 palavras
-      </p>
+          <p className={titleWords > 5 ? "error" : "muted"}>
+            {titleWords}/5 palavras
+          </p>
 
-      <label>Corpo</label>
-      <textarea
-        value={notification.body || ""}
-        onChange={handleBodyChange}
-      />
+          <label>Corpo</label>
+          <textarea
+            value={notification.body || ""}
+            onChange={handleBodyChange}
+          />
 
-      <p className={bodyWords > 10 ? "error" : "muted"}>
-        {bodyWords}/10 palavras
-      </p>
+          <p className={bodyWords > 10 ? "error" : "muted"}>
+            {bodyWords}/10 palavras
+          </p>
 
-      <button
-        disabled={!isValid}
-        onClick={() => onAddToQueue(notification)}
-      >
-        Adicionar à fila
-      </button>
+          <button
+            disabled={!isValid}
+            onClick={() => onAddToQueue(notification)}
+          >
+            Adicionar à fila
+          </button>
+        </div>
+
+        <div className="edit-preview">
+          <MobilePreview
+            title={notification.title}
+            body={notification.body}
+            appName={notification.campaignName || "Auto Notify"}
+          />
+        </div>
+      </div>
     </section>
   );
 }
