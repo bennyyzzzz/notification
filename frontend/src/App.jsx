@@ -50,6 +50,10 @@ export default function App() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isRefreshingQueue, setIsRefreshingQueue] = useState(false);
 
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem("theme") || "dark";
+  });
+
   const [modal, setModal] = useState({
     open: false,
     title: "",
@@ -59,6 +63,12 @@ export default function App() {
   useEffect(() => {
     loadQueue();
   }, []);
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+
+    localStorage.setItem("theme", theme);
+  }, [theme]);
 
   function showModal(title, message) {
     setModal({
@@ -255,10 +265,23 @@ export default function App() {
     }
   }
 
+  function toggleTheme() {
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+  }
+
   return (
     <main className="container">
       <header className="hero">
-        <h1>App Notify</h1>
+        <div className="hero-top">
+          <h1>APP NOTIFY</h1>
+
+          <button
+            className="theme-toggle"
+            onClick={toggleTheme}
+          >
+            {theme === "dark" ? "☀ LIGHT" : "☾ DARK"}
+          </button>
+        </div>
       </header>
 
       <nav className="tabs">
