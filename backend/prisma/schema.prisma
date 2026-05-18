@@ -88,6 +88,7 @@ model SendHistory {
   status            String
   firebaseMessageId String?
   errorMessage      String?
+  scheduledAt       DateTime?
   sentAt            DateTime @default(now())
 
   notification Notification? @relation(fields: [notificationId], references: [id])

@@ -6,12 +6,17 @@ let isRunning = false;
 
 export function startScheduler() {
   cron.schedule("* * * * *", async () => {
-    if (isRunning) return;
+    if (isRunning) {
+      return;
+    }
 
     isRunning = true;
 
     try {
       const now = new Date();
+
+      console.log("[SCHEDULER] Verificando agendamentos...");
+      console.log("[SCHEDULER] Agora:", now.toISOString());
 
       const scheduledNotifications = await prisma.notification.findMany({
         where: {
@@ -19,10 +24,23 @@ export function startScheduler() {
           scheduledAt: {
             lte: now
           }
+        },
+        orderBy: {
+          scheduledAt: "asc"
         }
       });
 
+      if (scheduledNotifications.length === 0) {
+        console.log("[SCHEDULER] Nenhuma notificação pendente.");
+      }
+
       for (const notification of scheduledNotifications) {
+        console.log("[SCHEDULER] Encontrada:", {
+          id: notification.id,
+          title: notification.title,
+          scheduledAt: notification.scheduledAt?.toISOString()
+        });
+
         try {
           await prisma.notification.update({
             where: {
@@ -33,7 +51,12 @@ export function startScheduler() {
             }
           });
 
-          await sendFirebaseNotification(notification);
+          await sendFirebaseNotification({
+            ...notification,
+            scheduledAt: notification.scheduledAt
+              ? notification.scheduledAt.toISOString()
+              : null
+          });
 
           await prisma.notification.update({
             where: {
@@ -44,7 +67,9 @@ export function startScheduler() {
             }
           });
 
-          console.log(`Notificação agendada enviada: ${notification.id}`);
+          console.log(
+            `[SCHEDULER] Notificação agendada enviada: ${notification.id}`
+          );
         } catch (error) {
           await prisma.notification.update({
             where: {
@@ -56,13 +81,13 @@ export function startScheduler() {
           });
 
           console.error(
-            `Erro ao enviar notificação agendada ${notification.id}:`,
+            `[SCHEDULER] Erro ao enviar notificação agendada ${notification.id}:`,
             error.response?.data || error.message
           );
         }
       }
     } catch (error) {
-      console.error("Erro no scheduler:", error.message);
+      console.error("[SCHEDULER] Erro geral:", error.message);
     } finally {
       isRunning = false;
     }

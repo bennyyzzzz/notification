@@ -1,6 +1,14 @@
 import { useEffect, useState } from "react";
 import { api } from "../api/api";
 
+function formatDate(date) {
+  if (!date) {
+    return "Não informado";
+  }
+
+  return new Date(date).toLocaleString();
+}
+
 export default function HistoryPage() {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -48,6 +56,7 @@ export default function HistoryPage() {
               <div>
                 <div className="history-title-row">
                   <h3>{item.title}</h3>
+
                   <span className={`status-badge status-${item.status}`}>
                     {item.status}
                   </span>
@@ -57,7 +66,7 @@ export default function HistoryPage() {
               </div>
 
               <div className="history-date">
-                {new Date(item.sentAt).toLocaleString()}
+                Enviado em: {formatDate(item.sentAt)}
               </div>
             </div>
 
@@ -75,6 +84,18 @@ export default function HistoryPage() {
               </div>
 
               <div>
+                <span>Agendado para</span>
+                <strong>
+                  {item.scheduledAt ? formatDate(item.scheduledAt) : "Envio imediato"}
+                </strong>
+              </div>
+
+              <div>
+                <span>Enviado em</span>
+                <strong>{formatDate(item.sentAt)}</strong>
+              </div>
+
+              <div>
                 <span>Firebase Message ID</span>
                 <strong className="text-break">
                   {item.firebaseMessageId || "Não informado"}
@@ -83,6 +104,7 @@ export default function HistoryPage() {
 
               <div>
                 <span>URL final com UTM</span>
+
                 {item.trackedUrl ? (
                   <a
                     href={item.trackedUrl}

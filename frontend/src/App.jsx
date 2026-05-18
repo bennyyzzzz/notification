@@ -17,27 +17,34 @@ export default function App() {
     theme: "",
     segment: "",
     customSegment: "",
+
     hasPromotion: false,
     promotionDescription: "",
+
     hasCategory: false,
     category: "",
+
     hasProduct: false,
     product: "",
+
     hasCoupon: false,
     coupon: "",
     discountPercentage: "",
+
     redirectUrl: "",
-    sendDate: "",
-    sendTime: "",
+
+    sendMode: "now",
+    scheduledAt: "",
+
     audienceType: "token",
     audienceValue: "",
+
     tone: "direto"
   });
 
   const [errors, setErrors] = useState({});
   const [options, setOptions] = useState([]);
   const [selectedNotification, setSelectedNotification] = useState(null);
-
   const [queue, setQueue] = useState([]);
 
   const [modal, setModal] = useState({
@@ -45,6 +52,10 @@ export default function App() {
     title: "",
     message: ""
   });
+
+  useEffect(() => {
+    loadQueue();
+  }, []);
 
   function showModal(title, message) {
     setModal({
@@ -54,6 +65,15 @@ export default function App() {
     });
   }
 
+  async function loadQueue() {
+    try {
+      const response = await api.get("/queue");
+      setQueue(response.data);
+    } catch (error) {
+      console.log("Erro ao carregar fila:", error);
+    }
+  }
+
   function validateCampaign() {
     const newErrors = {};
 
@@ -61,8 +81,6 @@ export default function App() {
     if (!campaign.theme.trim()) newErrors.theme = true;
     if (!campaign.segment.trim()) newErrors.segment = true;
     if (!campaign.redirectUrl.trim()) newErrors.redirectUrl = true;
-    if (!campaign.sendDate.trim()) newErrors.sendDate = true;
-    if (!campaign.sendTime.trim()) newErrors.sendTime = true;
     if (!campaign.audienceValue.trim()) newErrors.audienceValue = true;
 
     if (!selectedIntegrationId) {
@@ -89,19 +107,28 @@ export default function App() {
       newErrors.coupon = true;
     }
 
+    if (campaign.sendMode === "scheduled") {
+      if (!campaign.scheduledAt.trim()) {
+        newErrors.scheduledAt = true;
+      } else {
+        const scheduledDate = new Date(campaign.scheduledAt);
+        const now = new Date();
+
+        if (scheduledDate <= now) {
+          newErrors.scheduledAt = true;
+
+          showModal(
+            "Agendamento inválido",
+            "Escolha uma data e horário futuros para agendar a notificação."
+          );
+        }
+      }
+    }
+
     setErrors(newErrors);
 
     return Object.keys(newErrors).length === 0;
   }
-
-  async function loadQueue() {
-  const response = await api.get("/queue");
-    setQueue(response.data);
-  }
-
-  useEffect(() => {
-    loadQueue();
-  }, []);
 
   async function handleGenerateOptions() {
     const isValid = validateCampaign();
@@ -139,8 +166,12 @@ export default function App() {
       audienceType: campaign.audienceType,
       audienceValue: campaign.audienceValue,
       firebaseIntegrationId: selectedIntegrationId,
-      sendDate: campaign.sendDate,
-      sendTime: campaign.sendTime
+      sendMode: campaign.sendMode,
+      scheduledAt:
+        campaign.sendMode === "scheduled"
+          ? new Date(campaign.scheduledAt).toISOString()
+          : null,
+      status: campaign.sendMode === "scheduled" ? "scheduled" : "queued"
     });
   }
 
@@ -160,6 +191,7 @@ export default function App() {
   async function handleRemoveFromQueue(id) {
     try {
       await api.delete(`/queue/${id}`);
+
       setQueue((prev) => prev.filter((item) => item.id !== id));
     } catch (error) {
       showModal("Erro", "Erro ao remover da fila.");
@@ -170,6 +202,7 @@ export default function App() {
   async function handleDuplicateQueueItem(id) {
     try {
       const response = await api.post(`/queue/${id}/duplicate`);
+
       setQueue((prev) => [...prev, response.data]);
     } catch (error) {
       showModal("Erro", "Erro ao duplicar item.");
@@ -178,6 +211,14 @@ export default function App() {
   }
 
   async function handleSendNotification(item) {
+    if (item.status === "scheduled") {
+      showModal(
+        "Notificação agendada",
+        "Essa notificação já está programada. Ela será enviada automaticamente no horário definido."
+      );
+      return;
+    }
+
     try {
       const response = await api.post("/send-notification", item);
 

@@ -96,6 +96,7 @@ async function sendSingleMessage(data) {
 
   const history = await prisma.sendHistory.create({
     data: {
+      notificationId: data.id ? Number(data.id) : null,
       campaignName,
       title,
       body,
@@ -103,7 +104,8 @@ async function sendSingleMessage(data) {
       audienceValue,
       trackedUrl,
       status: "sent",
-      firebaseMessageId: response.data.name || null
+      firebaseMessageId: response.data.name || null,
+      scheduledAt: data.scheduledAt ? new Date(data.scheduledAt) : null
     }
   });
 

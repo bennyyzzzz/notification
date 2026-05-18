@@ -3,8 +3,43 @@ import { prisma } from "../database/prisma.js";
 
 const router = express.Router();
 
+function normalizeScheduledAt(value) {
+  if (!value) {
+    return null;
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  return date;
+}
+
+function getStatusFromRequest(body) {
+  if (body.status === "scheduled") {
+    return "scheduled";
+  }
+
+  if (body.sendMode === "scheduled") {
+    return "scheduled";
+  }
+
+  return "queued";
+}
+
 router.post("/", async (req, res) => {
   try {
+    const status = getStatusFromRequest(req.body);
+    const scheduledAt = normalizeScheduledAt(req.body.scheduledAt);
+
+    if (status === "scheduled" && !scheduledAt) {
+      return res.status(400).json({
+        error: "Data e horário do agendamento são obrigatórios."
+      });
+    }
+
     const item = await prisma.notification.create({
       data: {
         campaignName: req.body.campaignName,
@@ -13,9 +48,9 @@ router.post("/", async (req, res) => {
         redirectUrl: req.body.redirectUrl,
         audienceType: req.body.audienceType,
         audienceValue: req.body.audienceValue,
-        status: req.body.status || "queued",
-        scheduledAt: req.body.scheduledAt ? new Date(req.body.scheduledAt) : null,
-        firebaseIntegrationId: Number(req.body.firebaseIntegrationId)
+        firebaseIntegrationId: Number(req.body.firebaseIntegrationId),
+        status,
+        scheduledAt
       }
     });
 
@@ -52,14 +87,23 @@ router.get("/", async (req, res) => {
 
 router.put("/:id", async (req, res) => {
   try {
+    const data = {
+      ...req.body
+    };
+
+    if (req.body.scheduledAt !== undefined) {
+      data.scheduledAt = normalizeScheduledAt(req.body.scheduledAt);
+    }
+
+    if (req.body.firebaseIntegrationId !== undefined) {
+      data.firebaseIntegrationId = Number(req.body.firebaseIntegrationId);
+    }
+
     const item = await prisma.notification.update({
       where: {
         id: Number(req.params.id)
       },
-      data: {
-        ...req.body,
-        scheduledAt: req.body.scheduledAt ? new Date(req.body.scheduledAt) : undefined
-      }
+      data
     });
 
     res.json(item);
@@ -79,7 +123,9 @@ router.delete("/:id", async (req, res) => {
       }
     });
 
-    res.json({ success: true });
+    res.json({
+      success: true
+    });
   } catch (error) {
     res.status(500).json({
       error: "Erro ao remover item da fila.",
@@ -110,9 +156,9 @@ router.post("/:id/duplicate", async (req, res) => {
         redirectUrl: item.redirectUrl,
         audienceType: item.audienceType,
         audienceValue: item.audienceValue,
-        status: "queued",
-        scheduledAt: null,
-        firebaseIntegrationId: item.firebaseIntegrationId
+        firebaseIntegrationId: item.firebaseIntegrationId,
+        status: item.status === "scheduled" ? "scheduled" : "queued",
+        scheduledAt: item.scheduledAt
       }
     });
 
@@ -120,33 +166,6 @@ router.post("/:id/duplicate", async (req, res) => {
   } catch (error) {
     res.status(500).json({
       error: "Erro ao duplicar item.",
-      details: error.message
-    });
-  }
-});
-
-router.post("/:id/schedule", async (req, res) => {
-  try {
-    if (!req.body.scheduledAt) {
-      return res.status(400).json({
-        error: "Data e horário do agendamento são obrigatórios."
-      });
-    }
-
-    const item = await prisma.notification.update({
-      where: {
-        id: Number(req.params.id)
-      },
-      data: {
-        status: "scheduled",
-        scheduledAt: new Date(req.body.scheduledAt)
-      }
-    });
-
-    res.json(item);
-  } catch (error) {
-    res.status(500).json({
-      error: "Erro ao agendar notificação.",
       details: error.message
     });
   }

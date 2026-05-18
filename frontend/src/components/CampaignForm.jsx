@@ -73,7 +73,6 @@ export default function CampaignForm({
             onChange={handleChange}
           >
             <option value="">Selecione o segmento *</option>
-
             {segmentOptions.map((segment) => (
               <option key={segment} value={segment}>
                 {segment}
@@ -107,6 +106,52 @@ export default function CampaignForm({
           <option value="jovem">Jovem</option>
         </select>
       </div>
+
+      <div className="send-mode-box">
+        <label>Tipo de envio</label>
+
+        <div className="send-mode-options">
+          <label className="radio-card">
+            <input
+              type="radio"
+              name="sendMode"
+              value="now"
+              checked={campaign.sendMode === "now"}
+              onChange={handleChange}
+            />
+            <span>Enviar agora</span>
+          </label>
+
+          <label className="radio-card">
+            <input
+              type="radio"
+              name="sendMode"
+              value="scheduled"
+              checked={campaign.sendMode === "scheduled"}
+              onChange={handleChange}
+            />
+            <span>Agendar envio</span>
+          </label>
+        </div>
+      </div>
+
+      {campaign.sendMode === "scheduled" && (
+        <div>
+          <input
+            className={inputClass("scheduledAt")}
+            type="datetime-local"
+            name="scheduledAt"
+            value={campaign.scheduledAt}
+            onChange={handleChange}
+          />
+
+          {errors.scheduledAt && (
+            <span className="field-error">
+              Informe data e horário do agendamento
+            </span>
+          )}
+        </div>
+      )}
 
       <label className="checkbox">
         <input
@@ -231,34 +276,6 @@ export default function CampaignForm({
       </div>
 
       <div className="grid">
-        <div>
-          <input
-            className={inputClass("sendDate")}
-            type="date"
-            name="sendDate"
-            value={campaign.sendDate}
-            onChange={handleChange}
-          />
-          {errors.sendDate && (
-            <span className="field-error">Campo obrigatório</span>
-          )}
-        </div>
-
-        <div>
-          <input
-            className={inputClass("sendTime")}
-            type="time"
-            name="sendTime"
-            value={campaign.sendTime}
-            onChange={handleChange}
-          />
-          {errors.sendTime && (
-            <span className="field-error">Campo obrigatório</span>
-          )}
-        </div>
-      </div>
-
-      <div className="grid">
         <select
           name="audienceType"
           value={campaign.audienceType}
@@ -274,7 +291,13 @@ export default function CampaignForm({
           <input
             className={inputClass("audienceValue")}
             name="audienceValue"
-            placeholder="Token ou tópico *"
+            placeholder={
+              campaign.audienceType === "condition"
+                ? "Ex: 'clientes_vip' in topics && 'promocoes' in topics *"
+                : campaign.audienceType === "topic"
+                ? "Ex: messaging, promocoes, clientes_vip *"
+                : "Token ou lista de tokens *"
+            }
             value={campaign.audienceValue}
             onChange={handleChange}
           />

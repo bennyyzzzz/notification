@@ -148,6 +148,37 @@ textarea {
   font-size: 12px;
 }
 
+.send-mode-box {
+  margin: 18px 0;
+}
+
+.send-mode-options {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.radio-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #141414;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 12px 14px;
+  cursor: pointer;
+}
+
+.radio-card input {
+  width: auto;
+  margin: 0;
+}
+
+.radio-card:has(input:checked) {
+  border-color: #a60805;
+  background: #240d0d;
+}
+
 
 /* =========================================================
    5. Botões / Estados
@@ -449,6 +480,32 @@ button:disabled {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.schedule-box {
+  margin-top: 16px;
+  max-width: 260px;
+}
+
+.schedule-box label {
+  color: #aaa;
+  font-size: 13px;
+}
+
+.queue-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.queue-title-row h3 {
+  margin: 0;
+}
+
+.scheduled-info {
+  color: #ffd166;
+  margin-top: 8px;
+  font-size: 13px;
 }
 
 
