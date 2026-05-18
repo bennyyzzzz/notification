@@ -1,7 +1,7 @@
 export default function GeneratedOptions({ options, onChoose }) {
   return (
     <section className="card">
-      <h2>2. Opções geradas pela IA</h2>
+      <h2>2. Opções geradas</h2>
 
       {options.length === 0 && (
         <p className="muted">Nenhuma opção gerada ainda.</p>

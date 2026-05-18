@@ -47,6 +47,9 @@ export default function App() {
   const [selectedNotification, setSelectedNotification] = useState(null);
   const [queue, setQueue] = useState([]);
 
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isRefreshingQueue, setIsRefreshingQueue] = useState(false);
+
   const [modal, setModal] = useState({
     open: false,
     title: "",
@@ -67,10 +70,14 @@ export default function App() {
 
   async function loadQueue() {
     try {
+      setIsRefreshingQueue(true);
+
       const response = await api.get("/queue");
       setQueue(response.data);
     } catch (error) {
       console.log("Erro ao carregar fila:", error);
+    } finally {
+      setIsRefreshingQueue(false);
     }
   }
 
@@ -142,6 +149,8 @@ export default function App() {
     }
 
     try {
+      setIsGenerating(true);
+
       const campaignToSend = {
         ...campaign,
         segment:
@@ -155,6 +164,8 @@ export default function App() {
     } catch (error) {
       showModal("Erro", "Erro ao gerar opções com IA.");
       console.log(error);
+    } finally {
+      setIsGenerating(false);
     }
   }
 
@@ -247,7 +258,7 @@ export default function App() {
   return (
     <main className="container">
       <header className="hero">
-        <h1>Gerador Push Notification</h1>
+        <h1>App Notify</h1>
       </header>
 
       <nav className="tabs">
@@ -294,6 +305,7 @@ export default function App() {
             errors={errors}
             setErrors={setErrors}
             onGenerate={handleGenerateOptions}
+            isGenerating={isGenerating}
           />
 
           <GeneratedOptions
@@ -317,6 +329,8 @@ export default function App() {
           onRemove={handleRemoveFromQueue}
           onDuplicate={handleDuplicateQueueItem}
           onSend={handleSendNotification}
+          onRefresh={loadQueue}
+          isRefreshing={isRefreshingQueue}
         />
       )}
 

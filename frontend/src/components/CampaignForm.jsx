@@ -110,8 +110,8 @@ export default function CampaignForm({
       <div className="send-mode-box">
         <label>Tipo de envio</label>
 
-        <div className="send-mode-options">
-          <label className="radio-card">
+        <div className="checkbox-list">
+          <label className="checkbox-item">
             <input
               type="radio"
               name="sendMode"
@@ -119,10 +119,14 @@ export default function CampaignForm({
               checked={campaign.sendMode === "now"}
               onChange={handleChange}
             />
-            <span>Enviar agora</span>
+
+            <div>
+              <strong>Enviar agora</strong>
+              <small>Dispara imediatamente após o envio.</small>
+            </div>
           </label>
 
-          <label className="radio-card">
+          <label className="checkbox-item">
             <input
               type="radio"
               name="sendMode"
@@ -130,7 +134,11 @@ export default function CampaignForm({
               checked={campaign.sendMode === "scheduled"}
               onChange={handleChange}
             />
-            <span>Agendar envio</span>
+
+            <div>
+              <strong>Agendar envio</strong>
+              <small>Define data e horário para envio automático.</small>
+            </div>
           </label>
         </div>
       </div>

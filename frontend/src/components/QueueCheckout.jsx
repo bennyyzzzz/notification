@@ -2,11 +2,25 @@ export default function QueueCheckout({
   queue,
   onRemove,
   onDuplicate,
-  onSend
+  onSend,
+  onRefresh,
+  isRefreshing
 }) {
   return (
     <section className="card">
-      <h2>4. Fila / Checkout de envio</h2>
+      <div className="section-header">
+        <div>
+          <h2>Fila / Checkout de envio</h2>
+
+          <p className="muted">
+            Gerencie notificações pendentes, agendadas ou com falha.
+          </p>
+        </div>
+
+        <button disabled={isRefreshing} onClick={onRefresh}>
+          {isRefreshing ? "Atualizando..." : "Atualizar fila"}
+        </button>
+      </div>
 
       {queue.length === 0 && (
         <p className="muted">Nenhuma notificação na fila.</p>
@@ -37,7 +51,8 @@ export default function QueueCheckout({
 
             {item.status === "scheduled" && item.scheduledAt && (
               <p className="scheduled-info">
-                Envio previsto: {new Date(item.scheduledAt).toLocaleString()}
+                Envio previsto:{" "}
+                {new Date(item.scheduledAt).toLocaleString()}
               </p>
             )}
           </div>
